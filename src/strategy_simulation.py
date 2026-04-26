@@ -16,14 +16,14 @@ def _():
     from statsmodels.regression.recursive_ls import RecursiveLS
     from statsmodels.regression.linear_model import OLS
 
-    return OLS, mo, np, os, pd, plt, product
+    return OLS, mo, np, pd, plt, product
 
 
 @app.cell
-def _(mo, os, pd):
+def _(pd):
     # Load data
-    fx_rates_data = pd.read_parquet(os.path.join(mo.notebook_location(), "../data/fx_rates.parquet"))
-    yields_data = pd.read_parquet(os.path.join(mo.notebook_location(), "../data/yields.parquet"))
+    fx_rates_data = pd.read_parquet("https://github.com/RiccardoRonz/InternationalCarry/raw/030af5a3250cc78705ad64e41851428d01d34b10/data/fx_rates.parquet")
+    yields_data = pd.read_parquet("https://github.com/RiccardoRonz/InternationalCarry/raw/030af5a3250cc78705ad64e41851428d01d34b10/data/yields.parquet")
     return fx_rates_data, yields_data
 
 
