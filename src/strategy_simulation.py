@@ -20,11 +20,10 @@ def _():
 
 
 @app.cell
-def _(os, pd):
+def _(mo, os, pd):
     # Load data
-    _data_dir = os.path.join(os.path.dirname(__file__), "../data")
-    fx_rates_data = pd.read_parquet(os.path.join(_data_dir, "fx_rates.parquet"))
-    yields_data = pd.read_parquet(os.path.join(_data_dir, "yields.parquet"))
+    fx_rates_data = pd.read_parquet(os.path.join(mo.notebook_location(), "../data/fx_rates.parquet"))
+    yields_data = pd.read_parquet(os.path.join(mo.notebook_location(), "../data/yields.parquet"))
     return fx_rates_data, yields_data
 
 
