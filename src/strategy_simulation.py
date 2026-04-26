@@ -11,6 +11,7 @@ def _():
     import numpy as np
     import os
     from itertools import product
+    import fastparquet
     import matplotlib.pyplot as plt
     from statsmodels.regression.recursive_ls import RecursiveLS
     from statsmodels.regression.linear_model import OLS
