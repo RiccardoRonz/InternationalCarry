@@ -26,6 +26,8 @@ def _(mo):
     Code for `Half a Century of Risk Premia in a Generalized Multi-Currency Carry Strategy: An Empirical Investigation` paper.
 
     Authors: Riccardo Rebonato, Riccardo Ronzani and Xuan Feng
+
+    [GitHub Repository](https://github.com/RiccardoRonz/InternationalCarry/tree/main)
     """)
     return
 
