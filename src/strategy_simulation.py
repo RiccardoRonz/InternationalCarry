@@ -22,8 +22,8 @@ def _():
 @app.cell
 def _(pd):
     # Load data
-    fx_rates_data = pd.read_parquet("https://github.com/RiccardoRonz/InternationalCarry/raw/030af5a3250cc78705ad64e41851428d01d34b10/data/fx_rates.parquet")
-    yields_data = pd.read_parquet("https://github.com/RiccardoRonz/InternationalCarry/raw/030af5a3250cc78705ad64e41851428d01d34b10/data/yields.parquet")
+    fx_rates_data = pd.read_parquet("../data/fx_rates.parquet")
+    yields_data = pd.read_parquet("../data/yields.parquet")
     return fx_rates_data, yields_data
 
 
