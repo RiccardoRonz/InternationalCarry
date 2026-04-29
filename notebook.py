@@ -137,7 +137,7 @@ def _(
 
             # Compute PnL
             df['PnL'] = - df['FX1XL']  / (df['FX0XL'] * df['PL01']) + df['PH1n1'] * df['FX1XH'] / (df['FX0XH'] * df['PH0n'])
-            df['PnL_eq4'] = (1/df['PX01']) * (-df['FX1XL']/df['FFX0_XL1'] + df['PH1n1']/df['FPH0n1'] * df['FX1XH']/df['FFX0_XH1'])
+            # df['PnL_eq4'] = (1/df['PX01']) * (-df['FX1XL']/df['FFX0_XL1'] + df['PH1n1']/df['FPH0n1'] * df['FX1XH']/df['FFX0_XH1'])
 
             # Assign to the dictionary
             data.append(df)
@@ -148,7 +148,7 @@ def _(
         return data
 
     # Run strategy
-    unconditional_strategy_data_across_maturities = compute_unconditional_strategy_data(
+    data = compute_unconditional_strategy_data(
         currency_options=currency_options,
         date_list=date_list,
         reference_maturities=reference_maturities,
@@ -159,7 +159,7 @@ def _(
 
     # Aggregate across maturities
     unconditional_strategy_data = (
-        unconditional_strategy_data_across_maturities
+        data
         .groupby(['t0', 'X', 'L', 'H'])[['PnL']]
         .mean()
         .reset_index()
@@ -168,7 +168,7 @@ def _(
     )
     unconditional_strategy_data['t1'] = unconditional_strategy_data['t0'] + holding_period
     unconditional_strategy_data = unconditional_strategy_data[['t0', 't1', 'X', 'L', 'H', 'PnL']].copy()
-    return (unconditional_strategy_data,)
+    return data, unconditional_strategy_data
 
 
 @app.cell
@@ -365,12 +365,6 @@ def _(mo, pd, plt, sharpe_ratios):
 
 
 @app.cell
-def _(viz_data):
-    viz_data
-    return
-
-
-@app.cell
 def _(
     h_currencies,
     l_currencies,
@@ -393,8 +387,8 @@ def _(
         for (x1, l1, h1) in product(x_currencies, l_currencies, h_currencies):
             curr_pnls = viz_data[(viz_data['X'] == x1) & (viz_data['L'] == l1) & (viz_data['H'] == h1)].set_index('t1')[['unconditional_PnL', 'conditional_PnL']].dropna()
             curr_pnls = (1+ curr_pnls).cumprod() - 1
-            curr_pnls[['unconditional_PnL']].plot(ax=axs[0])
-            curr_pnls[['conditional_PnL']].plot(ax=axs[1])
+            curr_pnls[['unconditional_PnL']].rename(columns={'unconditional_PnL': f'X:{x1}-L:{l1}-H:{h1}'}).plot(ax=axs[0])
+            curr_pnls[['conditional_PnL']].rename(columns={'conditional_PnL': f'X:{x1}-L:{l1}-H:{h1}'}).plot(ax=axs[1])
         # Remove legends for individual lines to avoid clutter, and add a single legend for the whole plot
         axs[0].set_title('Unconditional strategy cumulative PnL')
         axs[1].set_title('Conditional strategy cumulative PnL')
@@ -414,6 +408,94 @@ def _(
         l_currencies=l_currencies,
         h_currencies=h_currencies
     )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    # Strategy details
+
+    I want to explore the details for...
+    """)
+    return
+
+
+@app.cell
+def _(currency_options, mo):
+    select_X_currency = mo.ui.dropdown(options=currency_options, value=currency_options[0], label="Investor Currency (X)")
+    select_L_currency = mo.ui.dropdown(options=currency_options, value=currency_options[0], label="Funding Currency (L)")
+    select_H_currency = mo.ui.dropdown(options=currency_options, value=currency_options[0], label="Investment Currency (H)")
+
+    select_detail_date = mo.ui.date(label="Strategy Details for t0 Date:", value='1974-10-01', start='1974-10-01', stop='2020-02-01')
+    return (
+        select_H_currency,
+        select_L_currency,
+        select_X_currency,
+        select_detail_date,
+    )
+
+
+@app.cell
+def _(mo, select_detail_date):
+    mo.md(
+        f"""
+        Select parameters for the visualization of the strategy detail performance:
+    
+        {select_detail_date}
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo, select_H_currency, select_L_currency, select_X_currency):
+    # Select details
+    mo.vstack([
+        mo.hstack([select_X_currency, mo.md(f"Has value: {select_X_currency.value}")], justify='start', gap=5),
+        mo.hstack([select_L_currency, mo.md(f"Has value: {select_L_currency.value}")], justify='start', gap=5),
+        mo.hstack([select_H_currency, mo.md(f"Has value: {select_H_currency.value}")], justify='start', gap=3.6),
+    ])
+    return
+
+
+@app.cell
+def _(
+    pd,
+    select_H_currency,
+    select_L_currency,
+    select_X_currency,
+    select_detail_date,
+):
+    # Extract detail data
+    detail_date = pd.to_datetime(select_detail_date.value) + pd.offsets.MonthBegin(0)
+    x_currency = select_X_currency.value
+    l_currency = select_L_currency.value
+    h_currency = select_H_currency.value
+    return detail_date, h_currency, l_currency, x_currency
+
+
+@app.cell
+def _(data, detail_date, h_currency, l_currency, mo, x_currency):
+    mo.md("Full strategy details for the selected parameters:")
+    data[
+        (data['t0'] == detail_date) &
+        (data['X'] == x_currency) &
+        (data['L'] == l_currency) &
+        (data['H'] == h_currency)
+    ]
+    return
+
+
+@app.cell
+def _(detail_date, h_currency, l_currency, mo, strategies_data, x_currency):
+    mo.md("Conditional and unconditional PnLs aggregated across maturities:")
+    strategies_data[
+        (strategies_data['t0'] == detail_date) &
+        (strategies_data['X'] == x_currency) &
+        (strategies_data['L'] == l_currency) &
+        (strategies_data['H'] == h_currency)
+    ]
     return
 
 
