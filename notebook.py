@@ -53,8 +53,8 @@ def _(pd):
 @app.cell
 def _(holding_period: "pd.DateOffset", np, pd):
     # Load data
-    fx_rates_data = pd.read_parquet("data/fx_rates.parquet")
-    yields_data = pd.read_parquet("data/yields.parquet")
+    fx_rates_data = pd.read_parquet("https://github.com/RiccardoRonz/InternationalCarry/raw/main/data/fx_rates.parquet")
+    yields_data = pd.read_parquet("https://github.com/RiccardoRonz/InternationalCarry/raw/main/data/yields.parquet")
 
     # Add forward yields
     fwd_ylds = yields_data[['date', 'currency', 'maturity', 'yield']].copy()
